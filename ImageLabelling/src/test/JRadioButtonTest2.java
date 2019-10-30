@@ -56,11 +56,15 @@ public class JRadioButtonTest2 {
 	 */
 	public void setRadioButtonGroup(String itemTitle, String[] items)
 	{
+		ButtonGroup btnGroup = new ButtonGroup();
+		
 		this.itemTitleLabel.setText(itemTitle);
 		JRadioButton[] rabtns = new JRadioButton[items.length];
+		
 		for(int i = 0; i<items.length;i++)
 		{
 			rabtns[i]=new JRadioButton(items[i]);
+			
 			final String item = items[i];
 			rabtns[i].addActionListener(new ActionListener()
 					{
@@ -78,7 +82,7 @@ public class JRadioButtonTest2 {
 		}
 		JPanel itemPanel = new JPanel();
 		itemPanel.setLayout(new GridLayout(items.length, 1));
-		ButtonGroup btnGroup = new ButtonGroup();
+		
 		for(JRadioButton rabtn : rabtns)
 		{
 			itemPanel.add(rabtn);
