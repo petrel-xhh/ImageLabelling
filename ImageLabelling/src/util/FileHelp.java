@@ -1,9 +1,14 @@
 package util;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 public class FileHelp {
 
@@ -16,9 +21,9 @@ public class FileHelp {
 			File[] subFiles = dirFile.listFiles();
 			Arrays.stream(subFiles).forEach(subFile->
 			{
-				if(!subFile.isHidden() && isFilenameEndsWidth(subFile, formatStrings, true))
+				if(!subFile.isHidden())
 				{
-					if(subFile.isFile())
+					if(subFile.isFile() && isFilenameEndsWidth(subFile, formatStrings, true))
 					{
 						result.add(subFile.getAbsolutePath());
 					}
@@ -75,6 +80,32 @@ public class FileHelp {
 		String filename = new File(filePath).getName();
 		//TODO there may result in bugs when deal with string like "alike.jpg.jpg"
 		return filename.replaceAll(filePath, getExtname(filePath));
+	}
+	
+	public static BufferedImage getImage(String path, int width, int height)
+	{
+		BufferedImage image = getImage(path);
+		if(null == image)
+		{
+			return null;
+		}
+		return resize(image, width, height);
+	}
+	public static BufferedImage getImage(String path)
+	{
+		try {
+			return ImageIO.read(new File(path));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static BufferedImage resize(BufferedImage image, int width, int height)
+	{
+		BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_BGR);
+		result.getGraphics().drawImage(image.getScaledInstance(width, height, Image.SCALE_FAST), 0, 0, null);
+		return result;
 	}
 }
 

@@ -37,6 +37,7 @@ public class ImageFileHandler {
 		List<String> imagePathList = FileHelp.getFileAbsolutePathFromDirectory(dir, formatStrings);
 		imagePathList.forEach(imagePath->
 		{
+			System.out.println(imagePath);
 			this.result.put(imagePath, null);
 		});
 		
@@ -51,18 +52,7 @@ public class ImageFileHandler {
 		this.radioNetFilename = suffix;
 		String resultFilePath = dir+File.separator+RESULT_FILENAME_PREFIX+suffix+".csv";
 		File resultFile = new File(resultFilePath);
-		if(!resultFile.exists())
-		{
-			try
-			{
-				resultFile.createNewFile();
-			}catch(Exception e)
-			{
-				//TODO 
-				e.printStackTrace();
-			}
-		}
-		else
+		if(resultFile.exists())
 		{
 			try {
 				FileReader fr = new FileReader(resultFile);
@@ -143,7 +133,14 @@ public class ImageFileHandler {
 					if(tmpItemValues.containsKey(tmpItemKey))
 					{
 						String tmpItemValue = tmpItemValues.get(tmpItemKey);
-						sb.append(","+tmpItemValue);
+						if(tmpItemValue != null)
+						{
+							sb.append(","+tmpItemValue);
+						}
+						else//如果某个选项没有选择则留空
+						{
+							sb.append(",");
+						}
 					}
 					else
 					{
@@ -206,12 +203,16 @@ public class ImageFileHandler {
 	}
 	public Map<String, String> getImageItemValues(String imageId)
 	{
-		String absolutePath = this.dir+imageId; // imageId is like "/Africa/1111.jpg"
-		if(this.result.containsKey(absolutePath))
-		return this.result.get(imageId);
+		if(this.result.containsKey(imageId))
+		{
+			return this.result.get(imageId);
+		}
 		return null;
 	}
-	
+	public boolean isLabelled(String imageId)
+	{
+		return getImageItemValues(imageId) == null;
+	}
 	public List<String> getImageIdList()
 	{
 		List<String> result = new ArrayList<>();
