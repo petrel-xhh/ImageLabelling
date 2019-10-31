@@ -2,12 +2,12 @@ package main;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,24 +23,33 @@ import util.FileHelp;
 
 public class ImageFileHandler {
 
-	final private static String RESULT_FILENAME="LabelResult.csv";
+	final private static String RESULT_FILENAME_PREFIX="LabelResult_";
 	private String dir;
-	private List<String> itemKeys;	//the sort of itemKeys while save result file
+	private List<String> itemKeys;	//attention the sort of itemKeys while save result file
 	private Map<String, Map<String, String>> result;
-	private FileWriter writer;
+	private String radioNetFilename;
 	
-	public ImageFileHandler(String dir, String format)
+	public ImageFileHandler(String dir, String[] formatStrings)
 	{
 		this.result = new HashMap<>();
 		
 		//load all of images
-		List<String> imagePathList = FileHelp.getFileAbsolutePathFromDirectory(dir, format);
+		List<String> imagePathList = FileHelp.getFileAbsolutePathFromDirectory(dir, formatStrings);
 		imagePathList.forEach(imagePath->
 		{
 			this.result.put(imagePath, null);
 		});
 		
-		String resultFilePath = dir+File.separator+RESULT_FILENAME;
+		
+	}
+	
+	public void setRadioFileInformation(RadioFileHandler radioFileHandler)
+	{
+		//添加保存文件的后缀并尝试读取以前保存的文件
+		String radioFilename = radioFileHandler.getRadioFilename();
+		String suffix = FileHelp.getNetFilename(radioFilename);
+		this.radioNetFilename = suffix;
+		String resultFilePath = dir+File.separator+RESULT_FILENAME_PREFIX+suffix+".csv";
 		File resultFile = new File(resultFilePath);
 		if(!resultFile.exists())
 		{
@@ -71,6 +80,8 @@ public class ImageFileHandler {
 				else
 				{
 					//TODO do not have title
+					br.close();
+					fr.close();
 					return;
 				}
 				
@@ -93,22 +104,137 @@ public class ImageFileHandler {
 				}
 				
 				//finished
+				br.close();
+				fr.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
 		}
+		
+		//添加itemKeys
+		this.itemKeys = radioFileHandler.getItemKeys();
 	}
 	
-	public void setLabelItems(List<String> itemKeys)
+	/**
+	 * Get output line of an image
+	 * @param imageId	The absolute path of an image. 
+	 * @return null if result do not has imageId as a key
+	 * @throws Exception	when this class or itemKeys has not been initialized
+	 */
+	private String getImageOutputLine(String imageId) throws Exception
 	{
-		this.itemKeys = itemKeys;
+		if(this.result == null || this.result.isEmpty() || this.itemKeys == null || this.itemKeys.isEmpty() || this.radioNetFilename ==null)
+		{
+			throw new Exception("illegal state: object result or itemKeys is null or empty, can not get output line");
+		}
+		else
+		{
+			if(this.result.containsKey(imageId))
+			{
+				Map<String, String> tmpItemValues = this.result.get(imageId);
+				StringBuffer sb = new StringBuffer();
+				String relativePath = imageId.replace(this.dir, "");
+				sb.append(relativePath);
+				for(int i = 0; i < this.itemKeys.size(); i++)
+				{
+					String tmpItemKey = this.itemKeys.get(i);
+					if(tmpItemValues.containsKey(tmpItemKey))
+					{
+						String tmpItemValue = tmpItemValues.get(tmpItemKey);
+						sb.append(","+tmpItemValue);
+					}
+					else
+					{
+						sb.append(",");
+					}
+				}
+				sb.append("\n");
+				return sb.toString();
+			}
+			else
+			{
+				return null;
+			}
+		}
 	}
-	
-	public void saveFile()
+	public void saveFile() throws Exception
 	{
 		//TODO 保存的时候一定要注意按照itemKeys的顺序保存。如果某些图像没有某些item，则留空。输出的图像的路径为相对路径
+		if(this.result == null || this.result.isEmpty() || this.itemKeys == null || this.itemKeys.isEmpty())
+		{
+			throw new Exception("illegal state: object result or itemKeys is null or empty, can not get output line");
+		}
+		
+		String resultFilePath = dir+File.separator+RESULT_FILENAME_PREFIX+this.radioNetFilename+".csv";
+		try
+		{
+			FileWriter fw = new FileWriter(resultFilePath);
+			//get the headline of csv output file
+			StringBuffer sb = new StringBuffer();
+			sb.append("relativePath");
+			this.itemKeys.forEach(itemKey->
+			{
+				sb.append(","+itemKey);
+			});
+			sb.append("\n");
+			fw.write(sb.toString());
+			
+			//write all values
+			Iterator<String> imageIdIterator = this.result.keySet().iterator();
+			while(imageIdIterator.hasNext())
+			{
+				String tmpImageId = imageIdIterator.next();
+				String tmpImageOutputLine = this.getImageOutputLine(tmpImageId);
+				if(tmpImageOutputLine != null)
+				{
+					fw.write(tmpImageOutputLine);
+				}
+			}
+			
+			//finished writing, close filestream
+			fw.close();
+		}catch(IOException ioe)
+		{
+			ioe.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	public Map<String, String> getImageItemValues(String imageId)
+	{
+		String absolutePath = this.dir+imageId; // imageId is like "/Africa/1111.jpg"
+		if(this.result.containsKey(absolutePath))
+		return this.result.get(imageId);
+		return null;
 	}
 	
+	public List<String> getImageIdList()
+	{
+		List<String> result = new ArrayList<>();
+		this.result.forEach((k ,v)->
+		{
+			result.add(k);
+		});
+		return result;
+	}
+	public List<String> getImageIdUnlabelledList()
+	{
+		List<String> result = new ArrayList<>();
+		this.result.forEach((k ,v)->
+		{
+			if(v == null)
+			{
+				result.add(k);
+			}
+		});
+		return result;
+	}
+	public void setImageItemValues(String imageId, Map<String, String> itemValues)
+	{
+		this.result.put(imageId, itemValues);
+	}
 }

@@ -22,8 +22,12 @@ public class ImageLabelling {
 	private JMenuItem saveMenuItem;
 	private JMenuItem exitMenuItem;
 	private Map<JLabel, java.util.List<JRadioButton>> radioGroups;
+	private List<String> imageAbsolutePathList;
+	private ImageFileHandler imageFileHandler;
+	private RadioFileHandler radioFileHandler;
+	private final static String[] FORMAT_STRINGS = {"jpg"};
 	
-	public void prepare()
+	public void prepareUI()
 	{
 		//instance
 		this.frame = new JFrame();
@@ -128,10 +132,20 @@ public class ImageLabelling {
 			this.radioGroups.put(itemLabel, itemValueButtonList);
 		}
 		
+		
+		
 	}
-	private void saveRecord(Map<String, String> items)
+	
+	private void setRadioPanelSelectionState(Map<String, String> imageItemValues)
 	{
-		//TODO see if the file is ready fot write
+		
+	}
+	private Map<String, String> getRadioPanelSelectionState()
+	{
+		return null;
+	}
+	private void saveRecord(String imageId, Map<String, String> itemValues)
+	{
 		
 		
 	}
@@ -156,6 +170,10 @@ public class ImageLabelling {
 						if(fileChoosed.isDirectory())
 						{
 							//load images
+							String dir = fileChoosed.getAbsolutePath();
+							imageFileHandler = new ImageFileHandler(dir, FORMAT_STRINGS);
+							imageAbsolutePathList = imageFileHandler.getImageIdList();
+							//TODO init imageLabel
 							
 						}
 						else
@@ -175,20 +193,38 @@ public class ImageLabelling {
 					{
 					case JFileChooser.APPROVE_OPTION:
 						File fileChoosed = radioFileChooser.getSelectedFile();
-						if(fileChoosed.isDirectory())
+						if(fileChoosed.isFile())
 						{
 							//load radio file and init radio panel
-							
+							String filePath = fileChoosed.getAbsolutePath();
+							try
+							{
+								radioFileHandler = new RadioFileHandler(filePath);
+								imageFileHandler.setRadioFileInformation(radioFileHandler);
+								//TODO init radioPanel and init current Image selection status
+								initRadioPanel(radioFileHandler.getItemKeys(), radioFileHandler.getItemValuesList());
+								
+							}catch(Exception e)
+							{
+								statusLabel.setText("open radio file exception: "+e.getMessage());
+							}
 						}
 						else
 						{
-							statusLabel.setText("you must select a directory.");
+							statusLabel.setText("you must select a file.");
 						}
 						break;
 					case JFileChooser.CANCEL_OPTION:
 						statusLabel.setText("selection cancelled");
 						break;
 					}
+					break;
+				case "save":
+					
+					break;
+				case "exit":
+					
+					break;
 				}
 			}
 		};
@@ -197,6 +233,7 @@ public class ImageLabelling {
 		saveMenuItem.addActionListener(menuItemActionListener);
 		exitMenuItem.addActionListener(menuItemActionListener);
 		
+		//TODO add action to buttons
 		
 	}
 }
