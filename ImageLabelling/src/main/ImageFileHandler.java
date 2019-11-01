@@ -82,14 +82,17 @@ public class ImageFileHandler {
 				{
 					String[] tmpItemValues = line.trim().split(",");
 					String absolutePath = this.dir+tmpItemValues[0];	//路径样式为"/dir/picture.jpg"
-					
-					Map<String, String> tmpImageItemValues = new HashMap<>();
-					for(int i=1;i<tmpItemValues.length;i++)
+					Map<String, String> tmpImageItemValues = null;
+					if(tmpItemValues.length > 1)
 					{
-						int itemKeyIndex = i - 1;
-						String tmpItemKey = tmpItemKeys.get(itemKeyIndex);
-						String tmpItemValue = tmpItemValues[i];
-						tmpImageItemValues.put(tmpItemKey, tmpItemValue);
+						tmpImageItemValues = new HashMap<>();
+						for(int i=1;i<tmpItemValues.length;i++)
+						{
+							int itemKeyIndex = i - 1;
+							String tmpItemKey = tmpItemKeys.get(itemKeyIndex);
+							String tmpItemValue = tmpItemValues[i];
+							tmpImageItemValues.put(tmpItemKey, tmpItemValue);
+						}
 					}
 					this.result.put(absolutePath, tmpImageItemValues);
 				}
@@ -128,24 +131,31 @@ public class ImageFileHandler {
 				StringBuffer sb = new StringBuffer();
 				String relativePath = imageId.replace(this.dir, "");
 				sb.append(relativePath);
-				for(int i = 0; i < this.itemKeys.size(); i++)
+				if(tmpItemValues == null)
 				{
-					String tmpItemKey = this.itemKeys.get(i);
-					if(tmpItemValues.containsKey(tmpItemKey))
+					sb.append(",");
+				}
+				else
+				{
+					for(int i = 0; i < this.itemKeys.size(); i++)
 					{
-						String tmpItemValue = tmpItemValues.get(tmpItemKey);
-						if(tmpItemValue != null)
+						String tmpItemKey = this.itemKeys.get(i);
+						if(tmpItemValues.containsKey(tmpItemKey))
 						{
-							sb.append(","+tmpItemValue);
+							String tmpItemValue = tmpItemValues.get(tmpItemKey);
+							if(tmpItemValue != null)
+							{
+								sb.append(","+tmpItemValue);
+							}
+							else//如果某个选项没有选择则留空
+							{
+								sb.append(",");
+							}
 						}
-						else//如果某个选项没有选择则留空
+						else
 						{
 							sb.append(",");
 						}
-					}
-					else
-					{
-						sb.append(",");
 					}
 				}
 				sb.append("\n");
@@ -210,7 +220,7 @@ public class ImageFileHandler {
 		}
 		return null;
 	}
-	public boolean isLabelled(String imageId)
+	public boolean isUnlabelled(String imageId)
 	{
 		return getImageItemValues(imageId) == null;
 	}

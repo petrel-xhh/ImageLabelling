@@ -11,5 +11,6 @@ public class FileHelpTest {
 		System.out.println(FileHelp.getExtname(path));
 		System.out.println(FileHelp.getNetFilename(path));
 		System.out.println(path.contains("."));
+		System.out.println("a,".split(",").length);
 	}
 }

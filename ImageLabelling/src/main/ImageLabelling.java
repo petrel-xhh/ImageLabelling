@@ -16,13 +16,14 @@ import util.FileHelp;
 public class ImageLabelling {
 
 	private final static String[] FORMAT_STRINGS = {"jpg"};
-	private final Dimension IMAGE_SIZE = new Dimension(600, 400);
+	private final Dimension IMAGE_SIZE = new Dimension(640, 400);
 	private final Dimension FRAME_SIZE = new Dimension(900, 520);
 	private JFrame frame;
 	private JLabel statusLabel;
 	private JLabel imageLabel;
 	private JButton previousButton;
 	private JButton nextButton;
+	private JButton nextUnlabelledButton;
 	private Box radioBox;
 	private JMenuItem openDirMenuItem;
 	private JMenuItem openRadioFileMenuItem;
@@ -49,6 +50,7 @@ public class ImageLabelling {
 		this.imageLabel = new JLabel();
 		this.previousButton = new JButton("Previous");
 		this.nextButton = new JButton("Next");
+		this.nextUnlabelledButton = new JButton("Next Unlabelled");
 		this.radioBox = Box.createVerticalBox();
 		
 		//setLayout
@@ -62,6 +64,8 @@ public class ImageLabelling {
 		btnBox.add(previousButton);
 		btnBox.add(Box.createHorizontalGlue());
 		btnBox.add(nextButton);
+		btnBox.add(Box.createHorizontalGlue());
+		btnBox.add(nextUnlabelledButton);
 		btnBox.add(Box.createRigidArea(new Dimension(10, 20)));//put a fixed gap between the right side and the nextButton
 		
 		imageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));	//show the border of imageLabel
@@ -299,14 +303,15 @@ public class ImageLabelling {
 			break;
 		case "NextUnlabelled":
 			//TODO 目前只能找出当前图片之后的没有被标注的图片
-			for(; imageIndex<this.imageAbsolutePathList.size();imageIndex++)
+			for(; ++imageIndex<this.imageAbsolutePathList.size();)
 			{
 				String imageId = this.imageAbsolutePathList.get(imageIndex);
-				if(!this.imageFileHandler.isLabelled(imageId))
+				if(this.imageFileHandler.isUnlabelled(imageId))
 				{ 
 					break;
 				}
 			}
+			this.imageIndex = imageIndex % this.imageAbsolutePathList.size();
 			break;
 		default:
 			this.imageIndex = 0;
@@ -472,6 +477,13 @@ public class ImageLabelling {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				updateImage("Next");
+			}
+		});
+		this.nextUnlabelledButton.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				updateImage("NextUnlabelled");
 			}
 		});
 	}
