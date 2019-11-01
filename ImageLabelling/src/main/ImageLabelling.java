@@ -44,7 +44,7 @@ public class ImageLabelling {
 	private void prepareUI()
 	{
 		//instance
-		this.frame = new JFrame();
+		this.frame = new JFrame("图片标注");
 		this.statusLabel = new JLabel();
 		this.imageLabel = new JLabel();
 		this.previousButton = new JButton("Previous");
@@ -77,6 +77,7 @@ public class ImageLabelling {
 		//imageBox.setMaximumSize(new Dimension(600, 500));
 		
 		Box statusBox = Box.createHorizontalBox();
+		//statusBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		statusBox.add(Box.createRigidArea(new Dimension(10, 20)));	//put a fixed gap between the right size and the statusLabel
 		statusBox.add(statusLabel);
 		statusBox.add(Box.createHorizontalGlue());
@@ -85,12 +86,18 @@ public class ImageLabelling {
 		leftBox.add(Box.createVerticalStrut(10));
 		leftBox.add(statusBox);
 		
-		//Box rightBox = Box.createVerticalBox();
 		Box rightBox = Box.createVerticalBox();
+		//Box rightBox = Box.createHorizontalBox();
+		//this.radioBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		rightBox.add(this.radioBox);
-		rightBox.add(Box.createRigidArea(new Dimension((int)(FRAME_SIZE.width*0.35), 10)));
+		rightBox.add(Box.createVerticalGlue());
+		//rightBox.add(Box.createHorizontalGlue());
+		//rightBox.add(Box.createRigidArea(new Dimension((int)(FRAME_SIZE.width*0.35), 10)));
+		rightBox.setAlignmentX(Box.LEFT_ALIGNMENT);
 		
 		mainBox.add(leftBox);
+
+		mainBox.add(Box.createRigidArea(new Dimension(10, FRAME_SIZE.height)));
 		mainBox.add(rightBox);
 		mainBox.add(Box.createHorizontalGlue());
 		
@@ -168,6 +175,7 @@ public class ImageLabelling {
 			itemValues.forEach(itemValue->
 			{
 				JRadioButton itemValueButton = new JRadioButton(itemValue);
+				itemValueButton.setSelected(false);
 				itemValueButtonGroup.add(itemValueButton);
 				itemValueButtonList.add(itemValueButton);
 				
@@ -176,14 +184,14 @@ public class ImageLabelling {
 				tmpItemValueBox.add(itemValueButton);
 				tmpItemValueBox.add(Box.createHorizontalGlue());
 				tmpItemBox.add(tmpItemValueBox);
-				tmpItemBox.add(Box.createVerticalStrut(5));
+				//tmpItemBox.add(Box.createVerticalStrut(2));
 				
 			});
 			this.radioGroups.put(itemLabel, itemValueButtonList);
-			
 			this.radioBox.add(tmpItemBox);
-			this.radioBox.add(Box.createVerticalGlue());
 		}
+
+		this.radioBox.add(Box.createVerticalGlue());
 		this.frame.setVisible(true);
 	}
 	private java.util.List<JRadioButton> getItemValueRadioButtonGroup(String radioLabelText)
@@ -278,6 +286,7 @@ public class ImageLabelling {
 			return;
 		}
 		
+		Map<String, String> prevoiusImageItemSelectState = getRadioPanelSelectionState();
 		passImageSelectionState();//首先保存当前图像的选择状态
 		
 		switch(updateType)
@@ -313,9 +322,15 @@ public class ImageLabelling {
 		String imageId = imageAbsolutePathList.get(imageIndex);
 		if(this.imageFileHandler != null)
 		{
-			
 			Map<String, String> imageItemSelectState = imageFileHandler.getImageItemValues(imageId);
-			setRadioPanelSelectionState(imageItemSelectState);
+			if(imageItemSelectState == null)
+			{
+				setRadioPanelSelectionState(prevoiusImageItemSelectState);
+			}
+			else
+			{
+				setRadioPanelSelectionState(imageItemSelectState);
+			}
 		}
 		this.statusLabel.setText(imageId);
 		this.frame.setVisible(true);

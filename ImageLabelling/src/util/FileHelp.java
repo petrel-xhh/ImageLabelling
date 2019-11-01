@@ -60,7 +60,7 @@ public class FileHelp {
 	}
 	public static String getExtname(String filePath)
 	{
-		if(!filePath.contains("\\.") || filePath.startsWith("\\."))
+		if(!filePath.contains(".") || filePath.startsWith("."))
 		{
 			return "";
 		}
@@ -78,8 +78,8 @@ public class FileHelp {
 	public static String getNetFilename(String filePath)
 	{
 		String filename = new File(filePath).getName();
-		//TODO there may result in bugs when deal with string like "alike.jpg.jpg"
-		return filename.replaceAll(filePath, getExtname(filePath));
+		String extname = getExtname(filePath);
+		return filename.substring(0, filename.length() - extname.length() - 1);
 	}
 	
 	public static BufferedImage getImage(String path, int width, int height)

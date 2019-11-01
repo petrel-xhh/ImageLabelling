@@ -23,7 +23,7 @@ public class RadioFileHandler {
 	public RadioFileHandler(String radioFilePath) throws Exception
 	{
 		this.radioFileName = FileHelp.getFilename(radioFilePath);
-		
+		//System.out.println(radioFileName);
 		this.itemKeys = new ArrayList<>();
 		this.itemValuesList = new ArrayList<>();
 		List<String> lines = null;

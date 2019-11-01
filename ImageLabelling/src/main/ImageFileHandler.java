@@ -31,13 +31,14 @@ public class ImageFileHandler {
 	
 	public ImageFileHandler(String dir, String[] formatStrings)
 	{
+		this.dir = dir;
 		this.result = new HashMap<>();
 		
 		//load all of images
 		List<String> imagePathList = FileHelp.getFileAbsolutePathFromDirectory(dir, formatStrings);
 		imagePathList.forEach(imagePath->
 		{
-			System.out.println(imagePath);
+			//System.out.println(imagePath);
 			this.result.put(imagePath, null);
 		});
 		
